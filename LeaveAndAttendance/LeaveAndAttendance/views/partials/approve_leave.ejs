@@ -1,0 +1,74 @@
+<!--Admin - Get the Leave Application-->
+<div class="container-fluid" style="padding-top:15px; padding-left:20px; ">
+	<div class="panel panel-primary" >
+		<div class="panel-heading" style="height:45px; 	background: linear-gradient(#319FE1,#116A9F);">
+			<p style="color:white;">
+				<font size=4><b>Leave Application of Employees</b></font>
+			</p>
+			
+		</div>
+		<div class="panel-body">
+				<div style="height:5px; padding-left:70px;"></div>
+					<div style="padding-left:70px; width:90%;">
+						<div class="well row input-group" >
+								<input type="text" class="form-control" id="pattern1" placeholder="Search using Keyword">
+								<span class="input-group-addon" style="color:blue;" onclick="searchApproveLeave()"><i class="glyphicon glyphicon-search"></i></span>
+						</div>
+					</div>
+				<div style="height:5px;"></div>
+				<div class="row" style="width:95%; padding-left:50px;">
+					<div class="table-wrapper-scroll-y"><div id="AppReports" ></div></div>
+				</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function getApproveLeave() {
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+			var obj=JSON.parse(xmlHttpRequest.responseText);
+			var printtable="<table class=\"table table-hover \" border=1>";
+			printtable=printtable+"<thead><tr><th>Id</th><th>First Name</th><th>Last Name</th><th>From Date</th><th>To Date</th><th>No. of days</th><th>Reason</th><th>Type Of leave</th><th>Half/Full</th></tr></thead><tbody>"; 
+				for (x in obj)
+				{
+					printtable = printtable+"<tr><td>"+obj[x].EmplID+"</td><td>"+obj[x].FirstName+"</td><td>"+obj[x].LastName+"</td><td>"+obj[x].fromdate+"</td><td>"+obj[x].toDate+"</td><td>"+obj[x].noofdays+"</td><td>"+obj[x].Reason+"</td><td>"+obj[x].TypeOfLeave+"</td><td>"+obj[x].type1+"</td></tr>";
+				}
+				printtable=printtable+"</tbody></table>"; 
+			document.getElementById("AppReports").innerHTML =printtable;
+			}
+		}
+    xmlHttpRequest.open('GET', IPServer+'/getApproveLeave', true);
+    xmlHttpRequest.send();
+	}
+
+function searchApproveLeave() {
+	var pattern1=document.getElementById('pattern1').value;
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('POST', IPServer+'/searchApproveLeave', true);    
+	xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+	xmlHttpRequest.send(JSON.stringify({"pattern" : pattern1}));
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+			var obj=JSON.parse(xmlHttpRequest.responseText);
+			if(obj[0].EmplID!=0)
+			{
+			var printtable="<table class=\"table table-hover\" border=1>";
+			printtable=printtable+"<thead><tr><th>Id</th><th>First Name</th><th>Last Name</th><th>From Date</th><th>To Date</th><th>No. of days</th><th>Reason</th><th>Type Of leave</th><th>Half/Full</th></tr></thead><tbody>"; 
+				for (x in obj)
+				{
+					printtable = printtable+"<tr><td>"+obj[x].EmplID+"</td><td>"+obj[x].FirstName+"</td><td>"+obj[x].LastName+"</td><td>"+obj[x].fromdate+"</td><td>"+obj[x].toDate+"</td><td>"+obj[x].noofdays+"</td><td>"+obj[x].Reason+"</td><td>"+obj[x].TypeOfLeave+"</td><td>"+obj[x].type1+"</td></tr>";
+				}
+				printtable=printtable+"</tbody></table>"; 
+				document.getElementById("AppReports").innerHTML =printtable;
+			}
+			else
+			{
+				document.getElementById("AppReports").innerHTML ="No Records found";
+			}
+			
+			}
+		}
+	}
+</script>

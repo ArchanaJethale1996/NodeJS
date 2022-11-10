@@ -1,0 +1,25 @@
+<!--
+Admin with functionalites 
+	- Report for all employee leave balance (Highlight employees with zero leave balance)
+	- Report for all employees in/out time - monthly / weekly average (highlight employees with less average)
+	- See the Leave Application
+-->
+<%include ./partials/header %>
+<div class="row">
+	<div class="col-md-3 col-sm-12" style="height:570px; width:250px; padding-top:20px; padding-right:0px;">
+	  <ul class="nav nav-pills nav-stacked" role="tablist">
+		<li role="presentation" class="active"><a href="#report_balance" aria-controls="report_balance" role="tab" data-toggle="tab">Check Leave balance</a></li>
+		<li role="presentation"><a href="#report_average" onclick="report_average()" aria-controls="report_average" role="tab" data-toggle="tab">Average Report</a></li>
+		<li role="presentation" onclick="getApproveLeave()"><a href="#approve" aria-controls="approve" role="tab" data-toggle="tab">Approve Leave</a></li>
+	  </ul>
+	</div>
+
+	<div class="col-md-9 col-sm-12">
+	  <div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="report_balance"><%include ./partials/report_balance %></div>
+		<div role="tabpanel" class="tab-pane fade" id="report_average"><%include ./partials/report_average %></div>
+		<div role="tabpanel" class="tab-pane fade" id="approve"><%include ./partials/approve_leave %></div>
+	  </div>
+	</div>
+</div>
+<%include ./partials/footer %>

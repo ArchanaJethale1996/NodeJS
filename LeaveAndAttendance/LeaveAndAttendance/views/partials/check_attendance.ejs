@@ -1,0 +1,248 @@
+<!-- EMPLOYEE - Calendar, Attendance of particular date-->
+<div class="row">
+	<table> 
+	<tr>
+	<td>
+		<div >
+			<div class="month" style="	background: linear-gradient(#319FE1,#116A9F);"> 
+			  <ul>
+			  <div onclick="prev_month()">
+				<li  class="prev">&#10094;</li></div>
+				<div onclick="next_month()">
+				<li class="next">&#10095;</li></div>
+				<li><span id="cal_month"></span><br><span style="font-size:18px"><span id="cal_year"></span></span></li>
+			  </ul>
+			</div>
+
+			<ul class="weekdays">
+			  <li>Sunday</li>
+			  <li>Monday</li>
+			  <li>Tuesday</li>
+			  <li>Wednesday</li>
+			  <li>Thursday</li>
+			  <li>Friday</li>
+			  <li>Saturday</li>
+			</ul>
+			<!--Data will be filled by getCurrentMonth() or getSelectedMonth()-->
+			<div id="fday"></div>
+		</div>
+	</td>
+	<td>
+		<!--Get particular date attendance which is given by GetSelectedDateAttendance()-->
+		<div class="panel panel-default"  style="margin-left:30px; width:300px;">
+			<div class="panel-heading" style="background: linear-gradient(#319FE1,#116A9F);">
+				<b><font color="white">See Attendance of Particular Date</font></b>
+			</div>
+			<div class="panel-body">
+				<div class="input-group" >
+					<input type="text" class="form-control datepicker" id="SelectedDate" >
+					<span class="input-group-addon" style="color:blue;" onclick="GetSelectedDateAttendance()"><i class="glyphicon glyphicon-search"></i></span>
+				</div>
+					
+				<div id="GetSelectedAttendance" style="padding-top:10px;">
+				</div>
+			</div>
+		</div>
+		<div  style="padding-left:30px; width:300px;" >
+			<table class="table table-hover" border=1 style="width:300px;" >
+				<tr><th colspan="2">Day Status</th></tr>
+				<tr><td>P</td><td>Present</td></tr>
+				<tr><td>A</td><td> Absent</td></tr>
+				<tr><td>HD</td><td>Half Day</td></tr>
+				<tr><td>WO</td><td> Weekly Off</td></tr>
+				<tr><td>NJ</td><td> Not Join</td></tr>
+				<tr><td>DNYC</td><td>Day not yet came</td></tr>
+			</table>
+		</div>
+	</td>
+	</tr>
+	</table>
+</div>
+
+<script>
+
+	//USED FOR POP OVER GIVEN ON PARTICULAR MONTH DIV
+	$(document).ready(function(){
+		$('[data-toggle="popover"]').popover();   
+	});
+	
+	//To keep record of current month and year in calender
+		var month,year;
+	
+	//To get the month name given index
+		var month_array= new Array();
+        month_array[0] = "Jan";
+        month_array[1] = "Feb";
+        month_array[2] = "March";
+        month_array[3] = "April";
+        month_array[4] = "May";
+        month_array[5] = "June";
+        month_array[6] = "July";
+        month_array[7] = "August";
+        month_array[8] = "Sep";
+        month_array[9] = "Oct";
+        month_array[10] = "Nov";
+        month_array[11] = "Dec";	
+
+    // Finally, Get the day
+        var weekday = new Array();
+        weekday[0] = "Sunday";
+        weekday[1] = "Monday";
+        weekday[2] = "Tuesday";
+        weekday[3] = "Wednesday";
+        weekday[4] = "Thursday";
+        weekday[5] = "Friday";
+        weekday[6] = "Saturday";
+
+	//Date of selected month	
+		var FirstDay;
+		var LastDay;
+		
+	//For parsing the response of JSON format	
+		var obj;
+	
+		var start,end;
+	
+	//Callback on page load
+		$( document ).ready(function() {
+			getCurrentMonth();
+		});	
+	
+	//On click on calendar prev button
+		function prev_month()
+		{
+			if(--month===-1){
+				year--;
+				month=11;
+			}
+			document.getElementById('cal_month').innerHTML = month_array[month];
+			document.getElementById('cal_year').innerHTML = year;
+			getSelectedMonth();
+		}
+
+	//On click on calendar next button
+	function next_month()
+	{
+		if(++month===12){
+			year++;
+			month=0;
+		}
+		document.getElementById('cal_month').innerHTML = month_array[month];
+		document.getElementById('cal_year').innerHTML = year;
+		getSelectedMonth();
+	}	
+
+	//Convert the date into yyyy-mm-dd	
+	function convert(str) {
+		var date = new Date(str),
+			mnth = ("0" + (date.getMonth()+1)).slice(-2),
+			day  = ("0" + date.getDate()).slice(-2);
+		return [ date.getFullYear(), mnth, day ].join("-");
+	}
+
+	//Get data of current month
+	function getCurrentMonth(){
+        // THE DATE OBJECT.
+        var dt = new Date();
+		
+        // GET THE MONTH AND YEAR OF THE SELECTED DATE.
+        month = dt.getMonth();
+        year = dt.getFullYear();
+
+        // GET THE FIRST AND LAST DATE OF THE MONTH.
+        FirstDay = new Date(year, month, 1);
+        LastDay = new Date(year, month+1, 0);
+		document.getElementById('cal_month').innerHTML = month_array[month];
+		document.getElementById('cal_year').innerHTML = year;
+
+		//GET THE DATA OF EMPLOYEE
+		var xmlHttpRequest = new XMLHttpRequest();
+		xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				obj=JSON.parse(xmlHttpRequest.responseText);
+				var cal='<ul class="days">';
+				
+				//SKIP TILL START WEEKDAYS OCCUPIED BY PREV MONTH
+				for (i = 0; i < FirstDay.getDay(); i++) { 
+					cal=cal+'<li><h3>  </h3><span>   </span></li>'
+				}
+				
+				//BLOCKS FOR FULL MONTH
+				for (i = 1; i <= LastDay.getDate() ; i++) { 
+					cal=cal+'<li data-toggle="popover" title="Date : '+obj[i-1].DayDate+'\nDay :'+obj[i-1].Week_Day+' ('+obj[i-1].status_day+')\nIn Time :'+obj[i-1].inTime+'\nOut Time :'+obj[i-1].outTime+'\nMan Hours :'+obj[i-1].ManHours+'" style="border:1px; border-style:solid;"><h3>'+i+'</h3><span>'+obj[i-1].My_status+'</span></li>'
+				}
+				var cal=cal+'</ul>';
+				
+				//PRINT THE INFO
+				if (typeof weekday[FirstDay.getDay()] != 'undefined') {     // CHECK FOR 'undefined'.
+					document.getElementById('fday').innerHTML =cal;
+				}
+				else {
+					document.getElementById('fday').innerHTML = '';
+				}
+			}
+		}
+		xmlHttpRequest.open('POST', IPServer+'/getAttendanceMonth', true);
+		xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+		xmlHttpRequest.send(JSON.stringify({"fromdate":convert(FirstDay),"toDate":convert(LastDay)}));
+	}
+	
+	
+	function getSelectedMonth(){
+        // GET THE FIRST AND LAST DATE OF THE MONTH.
+        FirstDay = new Date(year, month, 1);
+        LastDay = new Date(year, month+1, 0);
+		
+		//SEND THE REQUEST
+		var xmlHttpRequest = new XMLHttpRequest();
+		xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				obj=JSON.parse(xmlHttpRequest.responseText);
+				var cal='<ul class="days">';
+				
+				//SKIP TILL START WEEKDAYS OCCUPIED BY PREV MONTH
+				for (i = 0; i < FirstDay.getDay(); i++) { 
+					cal=cal+'<li><h3> </h3><span>   </span></li>'
+				}
+				
+				//BLOCKS FOR FULL MONTH
+				for (i = 1; i <= LastDay.getDate() ; i++) { 
+					cal=cal+'<li data-toggle="popover" title="Date : '+obj[i-1].DayDate+'\nDay :'+obj[i-1].Week_Day+' ('+obj[i-1].status_day+')\nIn Time :'+obj[i-1].inTime+'\nOut Time :'+obj[i-1].outTime+'\nMan Hours :'+obj[i-1].ManHours+'" style="border:1px; border-style:solid;"><h3>'+i+'</h3><span>'+obj[i-1].My_status+'</span></li>'
+				}
+				
+				var cal=cal+'</ul>';
+				
+				//PRINT FULL MONTH
+				if (typeof weekday[FirstDay.getDay()] != 'undefined') {     // CHECK FOR 'undefined'.
+					document.getElementById('fday').innerHTML =cal;
+				}
+				else {
+					document.getElementById('fday').innerHTML = '';
+				}
+			}
+		}
+		xmlHttpRequest.open('POST', IPServer+'/getAttendanceMonth', true);
+		xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+		xmlHttpRequest.send(JSON.stringify({"fromdate":convert(FirstDay),"toDate":convert(LastDay)}));	
+	}
+	
+	//ACTUAL REQUEST FOR EMPLOYEE ATTENDANCE
+	function GetSelectedDateAttendance()
+	{
+		var SelectedDate1=document.getElementById('SelectedDate').value;
+		var xmlHttpRequest = new XMLHttpRequest();
+		xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {	
+				obj=JSON.parse(xmlHttpRequest.responseText);	
+				var printAttendanceResult='<table border=1 style="width:270px;"><tr><th>Date</th><td>'+obj[0].DayDate+'</td></tr><tr><th>Type of Day</th><td>'+obj[0].status_day+'</td></tr><tr><th>In Time</th><td>'+obj[0].inTime+'</td></tr><tr><th>Out Time</th><td>'+obj[0].outTime+'</td></tr><tr><th>Man Hours</th><td>'+obj[0].ManHours+'</td></tr><tr><th>Status</th><td>'+obj[0].My_status+'</td></tr></table>'
+				document.getElementById('GetSelectedAttendance').innerHTML= printAttendanceResult;
+			}
+		}
+		xmlHttpRequest.open('POST', IPServer+'/getAttendanceMonth', true);
+		xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+		xmlHttpRequest.send(JSON.stringify({"fromdate":SelectedDate1,"toDate":SelectedDate1}));
+	}
+</script>	
+
+
+

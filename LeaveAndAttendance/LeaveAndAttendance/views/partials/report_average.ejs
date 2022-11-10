@@ -1,0 +1,71 @@
+<!--Admin - Average of Employees-->
+<div class="container-fluid" style="padding-top:15px; padding-left:20px; ">
+	<div class="panel panel-primary" >
+		<div class="panel-heading" style="height:45px;	background: linear-gradient(#319FE1,#116A9F);">
+			<p style="color:white;">
+				<font size=4><b>Monthly Average Time for all Employees</b></font>
+			</p>
+			
+		</div>
+		<div class="panel-body">
+				<div style="height:5px; padding-left:70px;"></div>
+					<div style="padding-left:70px; width:90%;">
+						<div class="well row input-group" >
+						<table width="100%">
+							<tr><td>From Date </td><td><input type="text" class="form-control datepicker" id="fromDate" value="2018-01-01" style="width:200px; margin-left:31px;"></td>
+							<td style="padding-left:50px;">To Date </td><td><input type="text" class="form-control datepicker" id="toDate" value="2018-12-31" style="width:200px; margin-left:31px;"></td>
+							<td style="padding-left:40px;"><button style="padding:10px; width:120px;" class="glyphicon glyphicon-search btn btn-primary" onclick="report_average()"><b>&nbsp;Search</b></button></td></tr>
+						</table>
+						</div>
+					</div>
+				<div style="height:5px;"></div>
+				<div class="row" style="width:95%; padding-left:50px;">
+					<div id="averageTable"></div>
+				</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+	function report_average() {
+    var xmlHttpRequest = new XMLHttpRequest();
+	var fromDate=document.getElementById('fromDate').value;
+	var toDate=document.getElementById('toDate').value;
+	
+	xmlHttpRequest.open('POST', IPServer+'/Report_Average', true);
+    xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+	xmlHttpRequest.send(JSON.stringify({"fromDate":fromDate,"toDate":toDate}));
+
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				
+				var obj=JSON.parse(xmlHttpRequest.responseText);
+				var printtable="<table class=\"table table-hover\" border=1>";
+				printtable=printtable+"<thead><tr><th>Id</th><th>First Name</th><th>Last Name</th><th>Average Time(hr)</th></tr></thead><tbody>";
+				if(obj[0].EmplID!=0)
+				{
+					for (x in obj)
+					{
+						if((obj[x].hraverage*60+obj[x].minaverage)<=480)
+						{
+							printtable = printtable+"<tr class=\"danger\" style=\"color:red\">";
+						}
+						else
+						{
+							printtable = printtable+"<tr>";
+						}
+						printtable = printtable+"<td>"+obj[x].EmplID+"</td><td>"+obj[x].FirstName+"</td><td>"+obj[x].LastName+"</td><td>"+obj[x].hraverage+":"+obj[x].minaverage+"</td></tr>";
+					}
+					printtable=printtable+"</tbody></table>";	
+					document.getElementById("averageTable").innerHTML =printtable;
+				}
+				else
+				{
+					document.getElementById("averageTable").innerHTML ="No Records found";
+				}
+			}
+		}
+	}
+</script>
+

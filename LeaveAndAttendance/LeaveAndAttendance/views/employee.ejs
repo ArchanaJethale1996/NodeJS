@@ -1,0 +1,25 @@
+<!--
+Employee with functionalites 
+	- Allow employee to apply for leave (assume employee details are present with applicable leave balances)
+	- Adjust leave balances
+	- Allow employees to key in in/out time
+-->
+<%include ./partials/header %>
+<div class="row">
+	<div class="col-md-3 col-sm-12" style="height:570px; width:250px; padding-top:15px;">
+	  <ul class="nav nav-pills nav-stacked " role="tablist">
+		<li role="presentation" class="active"><a href="#check_attendance" onclick="getCurrentMonth()" aria-controls="check_attendance" role="tab" data-toggle="tab">Check Attendance</a></li>
+		<li role="presentation"><a href="#mark_attendance" aria-controls="mark_attendance" role="tab" data-toggle="tab">Mark Attendance</a></li>
+		<li role="presentation"><a href="#leave_app" aria-controls="messages" role="tab" data-toggle="tab" onclick="BalanceLeaveApp();">Leave Application</a></li>
+	  </ul>
+	</div>
+	<div class="col-md-9 col-sm-12">
+	  <div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="check_attendance"><%include ./partials/check_attendance %></div>
+		<div role="tabpanel" class="tab-pane fade" id="mark_attendance"><%include ./partials/mark_attendance %></div>
+		<div role="tabpanel" class="tab-pane fade" id="leave_app" ><%include ./partials/leave_app %></div>
+	  </div>
+	</div>
+</div>
+
+<%include ./partials/footer %>

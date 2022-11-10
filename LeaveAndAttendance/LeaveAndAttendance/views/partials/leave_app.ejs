@@ -1,0 +1,278 @@
+<!-- EMPLOYEE - INSERT LEAVE APPLICATION, VIEW CURRENT LEAVE BALANCE, BLOCK TO INSERT IF NO PENDING LEAVE FOR PARTICULAR TYPE-->
+<div class="container-fluid" style="padding-top:15px; padding-left:20px; ">
+	<div class="row">
+	<div class="col-md-8 col-sm-12">
+	<div class="panel panel-primary" >
+		<div class="panel-heading" style="height:45px;	background: linear-gradient(#319FE1,#116A9F);">
+			<p style="color:white;">
+				<font size=4><b>Leave Application</b></font>
+			</p>
+		</div>
+		<div class="panel-body">
+				<div style="height:5px;"></div>
+					<div class="row" style="width:90%; padding-left:30px;">
+					
+						<div class="form-group">
+						<div class="row">
+							<label for="leavetype" class="col-md-3 control-label">Leave Type</label>
+							  <div class="col-md-9">
+								  <select id="leavetype" class="form-control">
+									  <option value="" selected disabled>Select Type of leave</option>
+									  <option value="CL">CL</option>
+									  <option value="EL">EL</option>
+									  <option value="Compensatory">Compensatory</option>
+									  <option value="LOP">LOP</option>
+									  <option value="other">Other</option>
+									</select>
+							  </div>
+							</div>
+						</div>
+
+						<div class="form-group">
+						<div class="row">
+							<label for="startdate" class="col-md-3 control-label">From Date</label>
+							<div class="col-md-9">
+							  <input type="text" id="startdate" class="form-control" >
+							</div>
+						  </div>
+						</div>
+
+
+						<div class="form-group">
+						<div class="row">
+							<label for="enddate" class="col-md-3 control-label">To Date</label>
+							<div class="col-md-9">
+							  <input type="text" id="enddate" class="form-control" >
+							</div>
+						  </div>
+						</div>  
+						
+						
+						<div class="form-group">
+						<div class="row">
+						<label for="optradio" class="col-md-3 control-label">Leave</label>
+							<div class="col-md-9">
+							   <label class="radio-inline">
+								  <input type="radio" name="optradio" value="Full" checked="checked">Full Day
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="optradio" value="First">First Half
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="optradio" value="Second">Second Half
+								</label>
+							</div>
+						</div>		
+						</div>	
+						
+						<div class="form-group">
+						<div class="row">
+							<label for="noofdays" class="col-md-3 control-label">No. of days</label>
+							<div class="col-md-9">
+							  <input type="text" class="form-control" id="days"  readonly>
+							</div>
+						  </div>
+						</div>
+						 
+						<div class="form-group">
+							<div class="row">
+								<label for="reason" class="col-md-3 control-label">Reason</label>
+								<div class="col-md-9">
+									<textarea class="form-control" rows="" id="reason"></textarea>
+								</div>
+							</div>
+						</div>
+						
+						<div class="row">
+						<div class="form-group" style="padding-top:10px;">
+									<div class="col-md-2 col-sm-2"></div>
+									<div class="col-md-2 col-sm-2">
+										<button class="btn btn-primary" style="width:120px;" onclick="sendLeaveApp()">Submit</button>
+									</div>
+									<div class="col-md-5 col-sm-5">
+										<button class="btn btn-default" style="width:120px; margin-left:100px;" onclick="resetLeaveApp()">Reset</button>
+									</div>
+									<div class="col-md-2"></div>
+							</div>		
+						</div>
+					</div>	
+		</div>
+	</div>
+
+	</div>
+	<div class="col-md-4 col-sm-12"  >
+	<div class="panel panel-default" >
+		<div class="panel-heading">
+			<div id="BalanceLeaveTable"></div>	
+		</div>
+	</div>						  
+	</div>
+	</div>
+</div>
+
+
+<script>
+//LEAVE APPLICATION INSERT AND RESET THE BALANCE LEAVE 
+function sendLeaveApp() {
+    var xmlHttpRequest = new XMLHttpRequest();
+	var leavetype=document.getElementById('leavetype').value;
+	var fromdate=document.getElementById('startdate').value;
+	var todate=document.getElementById('enddate').value;
+	var typeDay = document.getElementsByName("optradio");
+    for (var x = 0; x < typeDay.length; x ++) {
+      if (typeDay[x].checked) {
+	  var type1=typeDay[x].value;
+     }
+    }
+	var noofdays=document.getElementById('days').value;
+	var reason=document.getElementById('reason').value;
+	if(!!leavetype && !!fromdate && !!todate && !!typeDay && !!noofdays && !!reason){
+	xmlHttpRequest.open('POST', IPServer+'/LeaveAppInsert', true);
+    xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+	xmlHttpRequest.send(JSON.stringify({"fromdate":fromdate,"toDate":todate,"noofdays":noofdays,"Reason":reason,"TypeOfLeave":leavetype,"type1":type1}));
+
+    xmlHttpRequest.onreadystatechange = function() {
+				if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+					alert("Values are inserted successfully...");
+							document.getElementById('startdate').value="";
+							document.getElementById('enddate').value="";
+							document.getElementById('days').value="";
+							document.getElementById('reason').value="";
+							var typeDay = document.getElementsByName("optradio");
+							typeDay[0].checked=true;
+							document.getElementById('leavetype').value="";
+							BalanceLeaveApp();
+				}
+			}
+		}
+		else
+		{
+			alert("Please Enter All Values before submitting.");
+		}
+	}
+
+//SHOW BALANCE LEFT OF PARTICULAR DAY	
+	function BalanceLeaveApp() {
+    var xmlHttpRequest = new XMLHttpRequest();	
+	xmlHttpRequest.open('GET', IPServer+'/BalanceLeave', true);
+	xmlHttpRequest.send();
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+			var obj=JSON.parse(xmlHttpRequest.responseText);
+			var table_print='<table class="table table-hover" width="150px" ><thead><tr><th>Type of Leave</th><th>Balance</th><th>Total</th></tr></thead><tbody><tr>';
+				table_print=table_print+'<td>EL</td><td>'+obj[0].EL+'</td><td>5</td></tr>';	
+				table_print=table_print+'<tr><td>CL</td><td>'+obj[0].CL+'</td><td>13</td></tr>';
+				table_print=table_print+'<tr><td>LOP</td><td>'+obj[0].LOP+'</td><td>1</td></tr>';	
+				table_print=table_print+'<tr><td>Compensatory</td><td>'+obj[0].Compensatory+'</td><td>6</td></tr>';	
+				table_print=table_print+'<tr><td>Other</td><td>'+obj[0].other+'</td><td>2</td></tr>';	
+			document.getElementById("BalanceLeaveTable").innerHTML =table_print;
+			
+			}
+		}
+	}
+
+//RESET ALL FIELDS
+	function resetLeaveApp() {
+		document.getElementById('startdate').value="";
+		document.getElementById('enddate').value="";
+		document.getElementById('days').value="";
+		document.getElementById('reason').value="";
+		var typeDay = document.getElementsByName("optradio");
+		typeDay[0].checked=true;
+		document.getElementById('leavetype').value="";
+	}
+
+//BLOCK IF NO BALANCE LEFT	
+	function CanApplyLeave()
+	{
+	var leavetype=document.getElementById('leavetype').value;
+	var noofdays=document.getElementById('days').value;
+	if(leavetype==="")
+	{
+		alert("Please Select Leave Type");
+		document.getElementById('startdate').value="";
+		document.getElementById('enddate').value="";
+		document.getElementById('days').value="";
+	}
+	else{
+		var xmlHttpRequest = new XMLHttpRequest();
+		xmlHttpRequest.open('POST', IPServer+'/CanApplyLeave', true);
+		xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+		xmlHttpRequest.send(JSON.stringify({"leavetype":leavetype}));
+
+		xmlHttpRequest.onreadystatechange = function() {
+				if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				var obj=JSON.parse(xmlHttpRequest.responseText);
+					if(obj[0].days<noofdays)
+					{
+						alert("You Can not apply for "+leavetype+" because you are requesting leave for more no. of days then you have.");
+						document.getElementById('startdate').value="";
+						document.getElementById('enddate').value="";
+						document.getElementById('days').value="";
+						document.getElementById('reason').value="";
+						var typeDay = document.getElementsByName("optradio");
+						typeDay[0].checked=true;
+						document.getElementById('leavetype').value="";
+					}
+				}
+			}
+		}
+	}
+	
+//To show Balance of Leave	
+function BalanceLeave() {
+    var xmlHttpRequest = new XMLHttpRequest();
+	
+	xmlHttpRequest.open('GET', IPServer+'/BalanceLeave', true);
+	xmlHttpRequest.send();
+
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+			var obj=JSON.parse(xmlHttpRequest.responseText);
+			var table_print='<table class="table table-hover" width="150px" ><thead><tr><th>Type of Leave</th><th>Balance</th><th>Total</th></tr></thead><tbody><tr>';
+				table_print=table_print+'<td>EL</td><td>'+obj[0].EL+'</td><td>5</td></tr>';	
+				table_print=table_print+'<tr><td>CL</td><td>'+obj[0].CL+'</td><td>13</td></tr>';
+				table_print=table_print+'<tr><td>LOP</td><td>'+obj[0].LOP+'</td><td>1</td></tr>';	
+				table_print=table_print+'<tr><td>Compensatory</td><td>'+obj[0].Compensatory+'</td><td>6</td></tr>';	
+				table_print=table_print+'<tr><td>Other</td><td>'+obj[0].other+'</td><td>2</td></tr>';	
+				document.getElementById("BalanceLeave").innerHTML =table_print;
+			}
+		}
+	}
+
+
+//GET AUTOMATIC NO OF DAYS	
+	$(document).ready(function() {
+		$( "#startdate,#enddate" ).datepicker({
+		changeMonth: true,
+		changeYear: true,
+		firstDay: 1,
+		dateFormat: 'dd-mm-yy',
+		})
+
+		$( "#startdate" ).datepicker({ dateFormat: 'dd-mm-yy' });
+		$( "#enddate" ).datepicker({ dateFormat: 'dd-mm-yy' });
+		
+		$('#startdate').change(function() {
+			$('#enddate').val("");
+			$('#days').val("");
+		})
+		$('#enddate').change(function() {
+			var start = $('#startdate').datepicker('getDate');
+			var end   = $('#enddate').datepicker('getDate');
+
+		if (start<=end) {
+			var days   = (end - start)/1000/60/60/24;
+			$('#days').val(days+1);
+			CanApplyLeave();
+		}
+		else {
+		  alert ("It seems you are selecting the to date which is before from date");
+		  $('#startdate').val("");
+		  $('#enddate').val("");
+		  $('#days').val("");
+		}
+		}); 
+	}); 	
+	
+</script>

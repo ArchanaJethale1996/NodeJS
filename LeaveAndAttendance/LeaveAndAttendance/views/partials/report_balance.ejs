@@ -1,0 +1,96 @@
+<!-- Admin - Show all Leave Balance-->
+<div class="container-fluid" style="padding-top:15px; padding-left:20px; ">
+	<div class="panel panel-primary" >
+		<div class="panel-heading" style="height:45px; background: linear-gradient(#319FE1,#116A9F);">
+			<p style="color:white;">
+				<font size=4><b>Leave Balance for all Employees</b></font>
+			</p>
+			
+		</div>
+		<div class="panel-body">
+				<div style="height:5px; padding-left:70px;"></div>
+					<div style="padding-left:70px; width:90%;">
+						<div class="well row input-group" >
+								<input type="text" class="form-control" id="pattern" placeholder="Search using keyword">
+								<span class="input-group-addon" style="color:blue;" onclick="searchLeaveBalance()"><i class="glyphicon glyphicon-search"></i></span>
+						</div>
+					</div>
+				<div style="height:5px;"></div>
+						<div class="row" style="width:95%; padding-left:50px;">
+							  <div id="balanceTable"></div>
+						</div>
+		</div>
+	</div>
+</div>
+
+<script>
+//Show Leave Balance
+$( document ).ready(function() {
+	getLeaveBalance();
+});
+function getLeaveBalance() {
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+			var obj=JSON.parse(xmlHttpRequest.responseText);
+			var printtable="<table class=\"table table-hover\" border=1>";
+			printtable=printtable+"<thead><tr><th>Id</th><th>First Name</th><th>Last Name</th><th>EL</th><th>CL</th><th>Comp. Leave</th><th>LOP</th><th>Other</th><th>Total Balance</th></tr></thead><tbody>";
+			for (x in obj)
+				{
+				if(obj[x].Total<=5)
+				{
+					printtable = printtable+"<tr class=\"danger\" style=\"color:red\">";
+				}else
+				{
+					printtable = printtable+"<tr>";
+				}
+				
+				printtable = printtable+"<td>"+obj[x].EmplID+"</td><td>"+obj[x].FirstName+"</td><td>"+obj[x].LastName+"</td><td>"+obj[x].EL+"</td><td>"+obj[x].CL+"</td><td>"+obj[x].Compensatory+"</td><td>"+obj[x].LOP+"</td><td>"+obj[x].other+"</td><td>"+obj[x].Total+"</td></tr>";
+				}
+				printtable=printtable+"</tbody></table>"; 
+			document.getElementById("balanceTable").innerHTML =printtable;
+			}
+		}
+    xmlHttpRequest.open('GET', IPServer+'/getBalanceLeave', true);
+    xmlHttpRequest.send();
+	}
+
+//Search Leave Balance using First Name, Last Name, Empl ID
+function searchLeaveBalance() {
+    var xmlHttpRequest = new XMLHttpRequest();
+	var pattern1=document.getElementById('pattern').value;
+	xmlHttpRequest.open('POST', IPServer+'/searchBalanceLeave', true);
+    xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+	xmlHttpRequest.send(JSON.stringify({"pattern" : pattern1}));
+
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				var obj=JSON.parse(xmlHttpRequest.responseText);
+				if(obj[0].EmplID!=0)
+				{
+				var printtable="<table class=\"table table-hover\" border=1>";
+				printtable=printtable+"<thead><tr><th>Id</th><th>First Name</th><th>Last Name</th><th>EL</th><th>CL</th><th>Comp. Leave</th><th>LOP</th><th>Other</th><th>Total Balance</th></tr></thead><tbody>";
+				for (x in obj)
+					{
+					if(obj[x].Total<=5)
+					{
+						printtable = printtable+"<tr class=\"danger\" style=\"color:red\">";
+					}
+					else
+					{
+						printtable = printtable+"<tr>";
+					}
+					
+						printtable = printtable+"<td>"+obj[x].EmplID+"</td><td>"+obj[x].FirstName+"</td><td>"+obj[x].LastName+"</td><td>"+obj[x].EL+"</td><td>"+obj[x].CL+"</td><td>"+obj[x].Compensatory+"</td><td>"+obj[x].LOP+"</td><td>"+obj[x].Other+"</td><td>"+obj[x].Total+"</td></tr>";
+					}
+					printtable=printtable+"</tbody></table>"; 
+					document.getElementById("balanceTable").innerHTML =printtable;
+				}
+				else
+				{
+					document.getElementById("balanceTable").innerHTML ="No records Found";
+				}
+			}
+		}
+	}	
+</script>	

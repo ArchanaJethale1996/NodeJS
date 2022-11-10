@@ -1,0 +1,128 @@
+<!-- Used for all pages--> 
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="stylesheets/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="stylesheets/app.css">
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<script src="javascript/bootstrap.js"></script>
+		<script>
+		//IP address of server so that our pages can access the service using LAN
+		var IPServer="http://10.99.99.172:5000";
+		//Used in Calendar -> CheckAttendance
+		$(function () {
+			  $('[data-toggle="popover"]').show()
+		});
+		
+		//Used in MarkAttendance and LeaveApp
+		$( function() {
+			$( ".datepicker" ).datepicker({ dateFormat: 'yy-mm-dd' });
+		  } );
+
+		//Logout ->In header  
+		function logpop()
+		{
+			if(	document.getElementById("logpops").style.display==='block')
+			{
+				document.getElementById("logpops").style.display='none';
+			}
+			else if(document.getElementById("logpops").style.display==='none')
+			{
+				document.getElementById("logpops").style.display='block';
+			}
+		}
+		</script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<title>Leave and Attendance System</title>  
+	</head>
+	<body >
+	<div class="row" style="background: linear-gradient(#319FE1,#116A9F); height:65px;">
+		<div class="col-md-7 col-sm-6">
+			<table>
+				<tr>
+					<td style="padding-left:10px;">
+						<img class="img-responsive img-rounded" style="padding:5px 0px 5px 5px;" src="/Images/logo.jpg" width="60px">
+					</td>
+				
+					<td style="padding-left:20px;">
+						<font size=5 color="white"><b>Harbinger Attendance System</b></font>
+					</td>
+				</tr>	
+			</table>
+		</div>
+		
+		<div class="col-md-2 col-sm-2">
+			
+		</div>	
+		<div class="col-md-3 col-sm-4 ">
+			<table>
+				<tr>
+					<td>
+							<table>
+								<tr>
+									<td style="padding-left:50px;">
+										<font face="Times New Roman"  size=3 color="white"><b>Welcome ,</b></font>
+									</td>
+								
+									<td>
+										<font face="Times New Roman" style="padding-left:10px; " size=3 color="white"><b><div id="res1"></div></b></font>
+									</td>
+								</tr>	
+							</table>  
+					</td>
+				
+					<td style="padding-left:60px;" onmouseover="logpop()">
+						<img class="img-responsive img-circle a1 row" src="/Images/user.jpg" alt="userlogo" style="padding-top:2px;" width="55px">
+					</td>
+				</tr>	
+			</table>  
+		</div>	
+	</div>
+	<div class="logoutpopup" id="logpops" style="display:none;">
+		<div class="container">
+		<div class="row">
+			<div style="padding:10px 0 10px 15px;">Name : <span id="logoutName"></span></div>
+		</div>
+		<div class="row">
+			<div style="padding:0 0 10px 15px;">Empl ID : <span id="logoutEmplID"></span></div>
+		</div>
+		<div class="row">
+			<div style="padding:0 0px 15px 15px;">Designation : <span id="logoutDesignation"></span></div>
+		</div>
+		<div class="row" >
+			<form action="/logout" method="GET">
+			<div class="input-group" style="padding-left:40px;">
+				<div style="width:180px; height:30px;">
+					<button class="glyphicon glyphicon-lock " style="color:#2E86C1; padding:5px; margin-left:5px; padding-right:20px;">&nbsp;Logout</button>			
+				</div>
+			</div>
+			</form>
+		</div>
+		</div>
+	</div>
+	
+	<script>
+	//Get user name and User Info From server cache and call this on page ready
+	$( document ).ready(function() {
+		getSessionUser();
+	});
+
+	function getSessionUser() {
+		var xmlHttpRequest = new XMLHttpRequest();
+		xmlHttpRequest.onreadystatechange = function() 
+		{
+				if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) 
+				{
+				var obj=JSON.parse(xmlHttpRequest.responseText);
+				document.getElementById("res1").innerHTML =obj.user;
+				document.getElementById("logoutName").innerHTML =obj.user+" "+obj.LastName;
+				document.getElementById("logoutEmplID").innerHTML =obj.EmplID;
+				document.getElementById("logoutDesignation").innerHTML =obj.designation;
+				}
+			}
+		xmlHttpRequest.open('GET', IPServer+'/getSessionUser', true);
+		xmlHttpRequest.send();
+	}	
+	</script>

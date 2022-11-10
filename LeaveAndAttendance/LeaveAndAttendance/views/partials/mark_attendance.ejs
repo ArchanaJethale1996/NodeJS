@@ -1,0 +1,135 @@
+<!-- EMPLOYEE - MARK ANY ATTENDANCE AND BLOCK DOUBLE ATTENDANCE-->
+<div class="container-fluid" style="padding-top:15px; padding-left:20px; ">
+	<div class="panel panel-primary" >
+		<div class="panel-heading" style="height:45px; background: linear-gradient(#319FE1,#116A9F);">
+			<p style="color:white;">
+				<font size=4><b>Mark Attendance</b></font>
+			</p>
+		</div>
+		
+		<div class="panel-body">		
+			<div style="height:5px;"></div>
+			<div class="row">
+				<div class="form-group" >
+				<table style="margin-left:115px;">
+					<tr>
+						<td width=100px>
+							<label for="date_attendance" class="control-label">Date</label>
+						</td>
+						<td>
+							<div>
+								<input type="text" class="form-control datepicker" id="date_attendance" onchange="checkAttendanceAlreadyMarked()" style="width:365px; margin-left:31px;">
+							</div>	
+						</td>
+					</tr>
+				</table>		
+				</div>
+			</div>		
+			
+			<div class="row" style="padding-top:5px;">
+					<div class="form-group" style="padding-left:92px;">
+						<label for="starttime" class="col-md-2 control-label">In Time</label>
+						<div class="col-md-10">
+							<div class="row">
+								<input type="time" class="form-control " id="starttime" style="width:365px;"></input>
+							</div>
+						</div>
+					</div>
+			</div>
+			<div class="row" style="padding-top:10px;">
+					<div class="form-group" style="padding-left:92px;">
+						<label for="starttime" class="col-md-2 control-label">Out Time</label>
+						<div class="col-md-10">
+							<div class="row">
+							<input type="time" class="form-control" id="stoptime" style="width:365px;"></input>	
+							</div>
+						</div>
+					</div>
+			</div>
+	
+			<div class="form-group" style="padding-top:25px;">
+				<div class="col-md-3"></div>
+				<div class="col-md-2">
+					<button type="submit" class="btn btn-primary" style="width:120px;" onclick="markAttendance()">Submit</button>
+				</div>
+				<div class="col-md-2">
+					<button type="submit" class="btn btn-default" style="width:120px;" onclick="resetMarkAttendance()">Reset</button>
+				</div>
+				<div class="col-md-5"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+//INSERT OPERATION FOR ATTENTANCE --> Send Request to server
+function markAttendance() {
+    var xmlHttpRequest = new XMLHttpRequest();
+	var date_attendance=document.getElementById('date_attendance').value;
+	var starttime=document.getElementById('starttime').value;
+	var stoptime=document.getElementById('stoptime').value;
+	var starttime24=convertTimeto24(starttime);
+	var stoptime24=convertTimeto24(stoptime);
+	
+	if(!!date_attendance && !!starttime && !!stoptime)
+	{
+		xmlHttpRequest.open('POST', IPServer+'/MarkAttendance', true);
+		xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+		xmlHttpRequest.send(JSON.stringify({"date_attendance":date_attendance,"starttime":starttime24,"stoptime":stoptime24}));
+
+		xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				console.log(xmlHttpRequest.responseText);
+				alert("Values are inserted successfully for date "+date_attendance+".");
+				document.getElementById('date_attendance').value="";
+				document.getElementById('starttime').value="";
+				document.getElementById('stoptime').value="";
+			}
+		}
+	}
+	else
+	{
+		alert("Please check if all values are entered.");
+	}
+}
+//RESET OPTION
+function resetMarkAttendance() {
+		document.getElementById('date_attendance').value="";
+		document.getElementById('starttime').value="";
+		document.getElementById('stoptime').value="";
+	}
+
+//CONVERT TIME TO 24 hr Format
+function convertTimeto24(time12h) {
+	  const [time, modifier] = time12h.split(' ');
+	  let [hours, minutes] = time.split(':');
+	  return hours + ':' + minutes+":00";
+}
+
+//BLOCK TO MARK DUPLICATE ATTENDANCE
+function checkAttendanceAlreadyMarked()
+{
+    var xmlHttpRequest = new XMLHttpRequest();
+	date_attendance=document.getElementById('date_attendance').value;
+	xmlHttpRequest.open('POST', IPServer+'/CheckAttendanceMark', true);
+    xmlHttpRequest.setRequestHeader("Content-Type","application/json");
+	xmlHttpRequest.send(JSON.stringify({"date_attendance":date_attendance}));
+
+    xmlHttpRequest.onreadystatechange = function() {
+			if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+				console.log(xmlHttpRequest.responseText);
+				obj=JSON.parse(xmlHttpRequest.responseText);
+							
+				if (obj[0].attendance>=1) {     
+				alert("You have already key in and out for the date "+date_attendance+". Kindly Select other date or Contact Admin ") ;
+				document.getElementById('date_attendance').value="";
+				document.getElementById('starttime').value="";
+				document.getElementById('stoptime').value="";
+				}
+			}
+		}
+}
+</script>
+
+

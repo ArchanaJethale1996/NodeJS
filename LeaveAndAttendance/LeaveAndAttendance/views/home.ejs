@@ -1,0 +1,80 @@
+<!--Login Page-->
+<html>
+	<head>
+		<link rel="stylesheet" href="stylesheets/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="stylesheets/app.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="javascript/bootstrap.js"></script>
+		<script>
+		//IP address of server so that our pages can access the service using LAN
+		var IPServer="http://10.99.99.172:5000";
+		
+		function getLogin() {
+			var user_name=document.getElementById('username').value;
+			var pass_word1=document.getElementById('password1').value;
+			if(!!user_name && !!pass_word1)
+			{
+			var xhttp = new XMLHttpRequest();
+					
+			xhttp.open('POST', IPServer+'/getLogin', true);
+			xhttp.setRequestHeader("Content-Type","application/json");
+			xhttp.send(JSON.stringify({"username" : user_name,"password1":pass_word1}));	
+			xhttp.onreadystatechange = function() {
+					if ( xhttp.readyState == XMLHttpRequest.DONE && xhttp.status == 200 ) {
+					var obj=JSON.parse(xhttp.responseText);
+						if(obj.credential_emp==="Admin")
+						{
+							window.location = IPServer+"/admin";
+						}
+						else if(obj.credential_emp==="Employee")
+						{ 
+							window.location = IPServer+"/employee";
+						}
+						else{
+							document.getElementById('username').value="";
+							document.getElementById('password1').value="";
+							alert("Invalid Username or Password");
+						}
+					}
+			}
+			}else
+			{
+				alert("Please Enter Username and Password before submitting.");
+			}
+		}
+		</script>
+		<title>Leave and Attendance System</title>
+	</head>
+<body  style="background-color:#C2E1F4;">
+	<div class="container-fluid" >
+		<div class="image hidden-sm" >
+		</div>
+		<div class="row t1">
+				<div class="col-md-2 ">
+				</div>
+
+				<div class="col-md-6 "  >
+				</div>
+
+				<div class="col-md-3">
+					<div class="row log">
+					<div class="row">
+						<font face="Times New Roman" size=6 color="blue">Login</font>
+					</div>
+					<div class="row input-group">
+						<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+						<input type="text" class="form-control" id="username" placeholder="Username">
+					</div> 
+					<div class="row"><br></div>
+					<div class="row input-group ">
+						<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+						<input type="password" id="password1" class="form-control" placeholder="Password">
+					</div>       
+					<div class="row"><br></div>
+							<button class="col-md-12 offset-md-2 btn btn-primary" onclick="getLogin()">Login</button>
+					</div>	
+				</div>
+		</div>
+	</div>
+</body>
+</html> 
